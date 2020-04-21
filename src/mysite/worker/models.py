@@ -1,251 +1,344 @@
 from django.db import models
-
-# Create your models here.
+from django.utils.translation import gettext_lazy as _
 
 
 class User(models.Model):
-    """User model contains user infos"""
     email = models.EmailField(
+        verbose_name=_('Email'),
         unique=True,
-        verbose_name='Email'
     )
     gender = models.CharField(
         max_length=1,
         choices=(
-            ('w', 'Women'),
-            ('m', 'Man'),
-            ('o', 'Other'),
+            ('m', _('Man')),
+            ('w', _('Women')),
+            ('o', _('Other')),
         ),
         blank=True,
-        null=True,
-        verbose_name='Gender'
+        null=True
     )
     first_name = models.CharField(
-        max_length=256,
-        verbose_name='First name'
+        _('first name'),
+        max_length=30,
+        blank=True
     )
     last_name = models.CharField(
-        max_length=256,
-        verbose_name='Last name'
+        _('last name'),
+        max_length=150,
+        blank=True
     )
     phone = models.CharField(
-        max_length=256,
+        max_length=16,
         blank=True,
         null=True,
-        verbose_name='Phone'
     )
     birth_date = models.DateField(
         blank=True,
         null=True,
-        verbose_name='Birth date'
+        verbose_name=_('Birth date')
     )
     updated = models.DateTimeField(
         auto_now=True,
         editable=False,
-        verbose_name='Update date'
+        verbose_name=_('Updated')
     )
     created = models.DateTimeField(
         auto_now_add=True,
         editable=False,
-        verbose_name='Created date'
+        verbose_name=_('Created')
     )
 
     class Meta:
-        verbose_name = 'User'
+        verbose_name = _('User')
+        verbose_name_plural = _('Users')
         db_table = 'user'
-        unique_together = ['email', 'phone']
+        unique_together = ('email', 'phone')
+        indexes = [
+            models.Index(fields=[
+                'email',
+                'phone',
+            ]),
+        ]
+
+    def __str__(self):
+        return '{}. {}'.format(
+            self.first_name[0],
+            self.last_name
+        )
 
 
 class Address(models.Model):
-    """Address model contains address of user"""
-    address1 = models.CharField(
-        max_length=256,
-        blank=True,
+    user = models.OneToOneField(
+        'User',
         null=True,
-        verbose_name='address1'
+        on_delete=models.PROTECT,
+    )
+    address1 = models.CharField(
+        max_length=255,
+        blank=False
     )
     address2 = models.CharField(
-        max_length=256,
-        blank=True,
-        null=True,
-        verbose_name='address2'
+        max_length=255,
+        blank=True
     )
-
-    zip_code = models.IntegerField(
-        max_length=5,
-        blank=True,
-        null=True,
-        verbose_name='zip_code')
-
+    postal_code = models.CharField(
+        max_length=255,
+        blank=False
+    )
     city = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        verbose_name='city')
-
+        max_length=255,
+        blank=False
+    )
     country = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        verbose_name='country')
-
+        max_length=128,
+        blank=False,
+        null=False,
+        default='FR',
+        verbose_name=_('Country'),
+        help_text='ISO Alpha-2'
+    )
     latitude = models.DecimalField(
         max_digits=8,
         decimal_places=3,
         blank=True,
         null=True,
-        verbose_name=('Latitude'))
-
+        verbose_name=_('Latitude')
+    )
     longitude = models.DecimalField(
         max_digits=8,
         decimal_places=3,
         blank=True,
         null=True,
-        verbose_name=('Longitude'))
-
+        verbose_name=_('Latitude')
+    )
     updated = models.DateTimeField(
         auto_now=True,
         editable=False,
-        verbose_name='Update date'
+        verbose_name=_('Updated')
     )
-
     created = models.DateTimeField(
         auto_now_add=True,
         editable=False,
-        verbose_name='Created date'
+        verbose_name=_('Created')
     )
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE)
+    class Meta:
+        verbose_name = _('Address')
+        verbose_name_plural = _('Addresses')
+        indexes = [
+            models.Index(fields=['address1', 'postal_code']),
+        ]
+        db_table = 'address'
 
-
-class Category(models.Model):
-    """Category model contains address of user"""
-    name = models.CharField(
-        max_length=256,
-        blank=False,
-        null=False,
-        verbose_name='name'
-    )
-    description = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='description')
+    def __str__(self):
+        return '{}. {} - {}'.format(
+            self.address1,
+            self.city,
+            self.country
+        )
 
 
 class Ad(models.Model):
-    """Ad model contains address of user"""
+    user = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        blank=False,
+        null=False
+    )
     title = models.CharField(
-        max_length=255,
+        max_length=128,
         blank=False,
         null=False,
-        verbose_name='title'
+        verbose_name=_('Title')
     )
-
     description = models.TextField(
-        blank=True,
         null=True,
-        verbose_name='description'
+        blank=True,
+        verbose_name=_('Description')
     )
-    ad_type = models.CharField(
+    category = models.ForeignKey(
+        'Category',
+        on_delete=models.PROTECT,
+        blank=True,
+        verbose_name=_('Category')
+    )
+    type = models.CharField(
         max_length=32,
-        blank=True,
-        null=True,
-        verbose_name='description'
+        choices=(
+            ('supply', _('Supply')),
+            ('demand', _('Demand')),
+        ),
+        default='supply',
+        verbose_name=_('Type')
     )
-
+    status = models.CharField(
+        max_length=32,
+        choices=(
+            ('waiting', _('Waiting')),
+            ('online', _('Online')),
+            ('cancelled', _('Cancelled')),
+        ),
+        default='waiting'
+    )
     updated = models.DateTimeField(
         auto_now=True,
         editable=False,
-        verbose_name='Update date'
+        verbose_name=_('Updated')
     )
-
     created = models.DateTimeField(
         auto_now_add=True,
         editable=False,
-        verbose_name='Created date'
+        verbose_name=_('Created')
     )
 
-    user_id = models.ForeignKey(
-        User, on_delete=models.CASCADE)
+    class Meta:
+        verbose_name = _('AD')
+        verbose_name_plural = _('Ads')
+        db_table = 'ad'
+        indexes = [
+            models.Index(fields=[
+                'title',
+                'status',
+            ]),
+        ]
 
-    category_id = models.ForeignKey(
-        Category, on_delete=models.CASCADE)
-
-
-class Conversation(models.Model):
-    """Conversation model infos about conversation beetween users"""
-    updated = models.DateTimeField(
-        auto_now=True,
-        editable=False,
-        verbose_name='Update date'
-    )
-
-    created = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-        verbose_name='Created date'
-    )
-
-    ad_id = models.ForeignKey(
-        Ad, on_delete=models.CASCADE)
-
-
-class Message(models.Model):
-    """Message model"""
-    updated = models.DateTimeField(
-        auto_now=True,
-        editable=False,
-        verbose_name='Update date'
-    )
-
-    created = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-        verbose_name='Created date'
-    )
-
-    content = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='message content'
-    )
-
-    updated = models.DateTimeField(
-        auto_now=True,
-        editable=False,
-        verbose_name='Update date'
-    )
-
-    created = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-        verbose_name='Created date'
-    )
-
-    sender_id = models.ForeignKey(
-        User, on_delete=models.CASCADE)
-
-    conversation_id = models.ForeignKey(
-        Conversation, on_delete=models.CASCADE)
+    def __str__(self):
+        return '{} ({})'.format(
+            self.title,
+            self.pk
+        )
 
 
 class Mission(models.Model):
-
+    customer = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        blank=False,
+        null=False,
+        verbose_name=_('User')
+    )
+    ad = models.ForeignKey(
+        'Ad',
+        on_delete=models.PROTECT,
+        blank=False,
+        null=False,
+        verbose_name=_('Ad')
+    )
     updated = models.DateTimeField(
         auto_now=True,
         editable=False,
-        verbose_name='Update date'
+        verbose_name=_('Updated')
     )
-
     created = models.DateTimeField(
         auto_now_add=True,
         editable=False,
-        verbose_name='Created date'
+        verbose_name=_('Created')
     )
 
-    ad_id = models.ForeignKey(
-        Ad, on_delete=models.CASCADE)
+    class Meta:
+        verbose_name = _('Mission')
+        verbose_name_plural = _('Missions')
+        db_table = 'mission'
 
-    customer_id = models.ForeignKey(
-        User, on_delete=models.CASCADE)
+    def __str__(self):
+        return '{} - {}'.format(
+            self.ad,
+            self.customer
+        )
+
+
+class Category(models.Model):
+    name = models.CharField(
+        max_length=255,
+        verbose_name=_('title')
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name=_('description')
+    )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = _('Category')
+        verbose_name_plural = _('Categories')
+        db_table = 'category'
+        indexes = [
+            models.Index(fields=[
+                'name',
+            ]),
+        ]
+
+    def __str__(self):
+        return str(self.name)
+
+
+class Conversation(models.Model):
+    ad = models.ForeignKey(
+        'Ad',
+        on_delete=models.PROTECT,
+        blank=False,
+        null=False,
+    )
+    updated = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+        verbose_name=_('Updated')
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        verbose_name=_('Created')
+    )
+
+    class Meta:
+        verbose_name = _('Conversation')
+        verbose_name_plural = _('Conversations')
+        db_table = 'conversation'
+
+    def __str__(self):
+        return '{} - {}'.format(
+            self.pk,
+            self.ad
+        )
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(
+        'User',
+        on_delete=models.PROTECT,
+        blank=False,
+        null=False,
+        verbose_name=_('User'),
+    )
+    conversation = models.ForeignKey(
+        'Conversation',
+        on_delete=models.PROTECT,
+        blank=False,
+        null=False,
+        verbose_name=_('Conversation')
+    )
+    content = models.TextField(
+        null=False,
+        blank=False,
+        verbose_name=_('Content')
+    )
+    updated = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+        verbose_name=_('Updated')
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        verbose_name=_('Created')
+    )
+
+    class Meta:
+        verbose_name = _('Message')
+        verbose_name_plural = _('Messages')
+        db_table = 'message'
+
+    def __str__(self):
+        return 'Message - {}'.format(
+            self.conversation
+        )
