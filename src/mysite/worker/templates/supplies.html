@@ -1,0 +1,9 @@
+{% if supplies %}
+<ul>
+  {% for ad in supplies %}
+  <li><a href="/details/{{ ad.id }}/">{{ ad.title }}</a></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No demands are available.</p>
+{% endif %}

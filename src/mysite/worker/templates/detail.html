@@ -1,0 +1,10 @@
+{% extends "base.html" %} {% block content %}
+<h1>Title: {{ ad.title }}</h1>
+
+<p><strong>Description:</strong> <a href="">{{ ad.description }}</a></p>
+<p><strong>status:</strong> {{ ad.status }}</p>
+<p><strong>type:</strong> {{ ad.type }}</p>
+<p><strong>Category:</strong> {{ ad.category }}</p>
+<p><strong>Author:</strong>{{ ad.user.email }}</p>
+<p></p>
+{% endblock %}
