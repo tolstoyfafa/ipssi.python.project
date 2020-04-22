@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block title %}Offres{% endblock %}
 {% if supplies %}
 <ul>
   {% for ad in supplies %}
@@ -25,3 +28,4 @@
 {% else %}
 <p>No demands are available.</p>
 {% endif %}
+{% endblock %}

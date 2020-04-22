@@ -66,6 +66,14 @@ class User(models.Model):
             self.last_name
         )
 
+    def age(self):
+        if self.birth_date:
+            myday = self.birth_date
+            diff = relativedelta(datetime.now(), myday)
+            print(diff)
+            return diff.years
+
+
 
 class Address(models.Model):
     user = models.OneToOneField(

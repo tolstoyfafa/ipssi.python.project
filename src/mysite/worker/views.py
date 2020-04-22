@@ -16,7 +16,8 @@ def home(request):
 
 
 def getAllAds(request):
-    template = loader.get_template('adds.html')
+    """get all ads of an author"""
+    template = loader.get_template('ads/ads.html')
     context = {
         'ads': Ad.objects.all()
     }
@@ -24,7 +25,8 @@ def getAllAds(request):
 
 
 def demand(request):
-    template = loader.get_template('demands.html')
+    """ads filter by demand"""
+    template = loader.get_template('demands/demands.html')
     context = {
         'demands': Ad.objects.filter(type='demand')
     }
@@ -32,7 +34,8 @@ def demand(request):
 
 
 def supply(request):
-    template = loader.get_template('supplies.html')
+    """ads filter by supply"""
+    template = loader.get_template('supplies/supplies.html')
     context = {
         'supplies': Ad.objects.filter(type='supply')
     }
@@ -40,7 +43,8 @@ def supply(request):
 
 
 def details(request, id):
-    template = loader.get_template('detail.html')
+    """Details of an Ad"""
+    template = loader.get_template('details/detail.html')
     my_id = int(id)
     try:
         context = {
