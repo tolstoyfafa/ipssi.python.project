@@ -39,9 +39,9 @@ def supply(request):
     return HttpResponse(template.render(context, request))
 
 
-def details(request, ad_id):
+def details(request, id):
     template = loader.get_template('detail.html')
-    my_id = int(ad_id)
+    my_id = int(id)
     try:
         context = {
             'ad': Ad.objects.get(pk=my_id)

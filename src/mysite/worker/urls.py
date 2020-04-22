@@ -7,5 +7,7 @@ urlpatterns = [
     re_path(r'ads', views.getAllAds, name='ads'),
     re_path(r'demands', views.demand, name='demands'),
     re_path(r'supplies', views.supply, name='supplies'),
-    path('details/<int:ad_id>/', views.details, name='details'),
+    re_path(r'detail/(?P<id>[\w-]+)/$', views.details, name='detail'),
 ]
+
+"""path('details/<int:ad_id>/', views.details, name='details'),"""
